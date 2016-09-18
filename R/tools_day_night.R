@@ -2,7 +2,7 @@
 #'
 #' \code{get_day_night} calculates nautical and civil dawn and dusk as well as
 #' sunrise and sunset, daylength, nautical length and civil length.
-#' @param subdf a data.frame with column longitude, latitude and dateTime and
+#' @param df a data.frame with column longitude, latitude and dateTime and
 #'   julday. As well as idcol.
 #' @param sun_events a sun_events dataframe generated from \code{get_sun_events}
 #' @return a data.frame with for each observation night attribute and time2sunevent.
@@ -32,15 +32,29 @@
 # longitudecol="longitude"
 # timecol="dateTime"
 
-get_day_night  <- function(subdf,sun_events,idcol="burstname",timecol="realTime",longitudecol="x"){
-  indiv <- first(subdf[,idcol])
-  subsun <- eval(parse(text=paste('dplyr::filter(sun_events,',idcol,'==indiv)',sep='')))
-  subdf2 <- dplyr::left_join(subdf,dplyr::select(subsun,julday,sunrise,sunset),by=c("julday"))
-  subdf2 <- eval(parse(text=paste('dplyr::filter(subdf2,!is.na(',longitudecol,'))',sep="")))
-  subdf2 <- eval(parse(text=paste('dplyr::mutate(subdf2,night=day_or_night(',timecol,',sunrise,sunset),time2sunevent=get_time2sunevent(',timecol,',sunrise,sunset))',sep="")))
-  subdf2 <- dplyr::select(subdf2,index,night,time2sunevent)
-  subdf <- dplyr::left_join(subdf,subdf2)
-  return(subdf)
+# df <- readRDS("../df.rds")
+# sun_events <- readRDS("../sun.rds")
+
+get_day_night  <- function(df,sun_events,idcol="burstname",timecol="realTime",longitudecol="x"){
+  df$Indexing <- 1:nrow(df)
+  totdf <- NULL
+  for(indiv in unique(df[,idcol])){
+    subdf <- eval(parse(text=paste("dplyr::filter(df,",idcol," == indiv)",sep="")))
+    subsun <- eval(parse(text=paste('dplyr::filter(sun_events,',idcol,'==indiv)',sep='')))
+    subdf2 <- dplyr::left_join(subdf,dplyr::select(subsun,julday,sunrise,sunset),by=c("julday"))
+    subdf2 <- eval(parse(text=paste('dplyr::filter(subdf2,!is.na(',longitudecol,'))',sep="")))
+    subdf2 <- eval(parse(text=paste('dplyr::mutate(subdf2,night=day_or_night(',timecol,',sunrise,sunset),time2sunevent=get_time2sunevent(',timecol,',sunrise,sunset))',sep="")))
+
+    subdf2 <- dplyr::select(subdf2,Indexing,night,time2sunevent)
+    subdf <- dplyr::left_join(subdf,subdf2)
+
+    if(is.null(totdf)){
+      totdf <- subdf
+    } else {
+      totdf <- rbind(totdf,subdf)
+    }
+  }
+  return(totdf)
 }
 
 #' Get day, night and time to sunrise or sunset

@@ -29,3 +29,4 @@ get_sun_events <- function(data){
   data<- as.data.frame(data)
   return(data)
 }
+

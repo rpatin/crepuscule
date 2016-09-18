@@ -4,11 +4,11 @@
 \alias{get_day_night}
 \title{Get day or night}
 \usage{
-get_day_night(subdf, sun_events, idcol = "burstname", timecol = "realTime",
+get_day_night(df, sun_events, idcol = "burstname", timecol = "realTime",
   longitudecol = "x")
 }
 \arguments{
-\item{subdf}{a data.frame with column longitude, latitude and dateTime and
+\item{df}{a data.frame with column longitude, latitude and dateTime and
 julday. As well as idcol.}
 
 \item{sun_events}{a sun_events dataframe generated from \code{get_sun_events}}
